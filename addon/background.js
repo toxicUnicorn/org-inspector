@@ -1,10 +1,71 @@
 
+const isSafari = navigator.userAgent.includes("Safari") && !navigator.userAgent.includes("Chrome");
+
 let sfHost;
+
+// The service worker is terminated when idle, which drops sfHost. Safari does this
+// aggressively, so mirror it into session storage instead of relying on the global.
+async function setSfHost(host) {
+  sfHost = host;
+  try {
+    await chrome.storage.session?.set({sfHost: host});
+  } catch (e) {
+    console.error("Could not persist sfHost:", e);
+  }
+}
+
+async function getSfHost() {
+  if (sfHost) {
+    return sfHost;
+  }
+  try {
+    ({sfHost} = await chrome.storage.session?.get("sfHost") ?? {});
+  } catch (e) {
+    console.error("Could not read sfHost:", e);
+  }
+  return sfHost;
+}
+
+// Safari has no container tabs, so sender.tab.cookieStoreId is undefined there, and since
+// Safari 18 the cookies API returns nothing unless an explicit storeId is passed. Enumerate
+// the stores instead. Chrome/Firefox keep their existing behaviour: an undefined storeId
+// selects the default store according to incognito split mode.
+async function getCookieStoreIds(sender) {
+  if (sender?.tab?.cookieStoreId) {
+    return [sender.tab.cookieStoreId];
+  }
+  if (!isSafari) {
+    return [undefined];
+  }
+  try {
+    const stores = await chrome.cookies.getAllCookieStores();
+    return stores.length ? stores.map(store => store.id) : [undefined];
+  } catch (e) {
+    console.error("Could not enumerate cookie stores:", e);
+    return [undefined];
+  }
+}
+
+async function getCookie(details, storeIds) {
+  for (const storeId of storeIds) {
+    const cookie = await chrome.cookies.get(storeId === undefined ? details : {...details, storeId});
+    if (cookie) {
+      return cookie;
+    }
+  }
+  return null;
+}
+
+async function getAllCookies(details, storeIds) {
+  let all = [];
+  for (const storeId of storeIds) {
+    all = all.concat(await chrome.cookies.getAll(storeId === undefined ? details : {...details, storeId}));
+  }
+  return all;
+}
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   // Perform cookie operations in the background page, because not all foreground pages have access to the cookie API.
-  // Firefox does not support incognito split mode, so we use sender.tab.cookieStoreId to select the right cookie store.
-  // Chrome does not support sender.tab.cookieStoreId, which means it is undefined, and we end up using the default cookie store according to incognito split mode.
   if (request.message == "getSfHost") {
     const currentDomain = new URL(request.url).hostname;
     // When on a *.visual.force.com page, the session in the cookie does not have API access,
@@ -14,7 +75,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // http://salesforce.stackexchange.com/questions/23277/different-session-ids-in-different-contexts
     // There is no straight forward way to unambiguously understand if the user authenticated against salesforce.com or cloudforce.com
     // (and thereby the domain of the relevant cookie) cookie domains are therefore tried in sequence.
-    chrome.cookies.get({url: request.url, name: "sid", storeId: sender.tab.cookieStoreId}, cookie => {
+    (async () => {
+      const storeIds = await getCookieStoreIds(sender);
+      const cookie = await getCookie({url: request.url, name: "sid"}, storeIds);
       if (!cookie || currentDomain.endsWith(".mcas.ms")) { //Domain used by Microsoft Defender for Cloud Apps, where sid exists but cannot be read
         sendResponse(currentDomain);
         return;
@@ -22,28 +85,29 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const [orgId] = cookie.value.split("!");
       const orderedDomains = ["salesforce.com", "cloudforce.com", "salesforce.mil", "cloudforce.mil", "sfcrmproducts.cn", "force.com"];
 
-      orderedDomains.forEach(currentDomain => {
-        chrome.cookies.getAll({name: "sid", domain: currentDomain, secure: true, storeId: sender.tab.cookieStoreId}, cookies => {
-
-          let sessionCookie = cookies.find(c => c.value.startsWith(orgId + "!") && c.domain != "help.salesforce.com");
-          if (sessionCookie) {
-            sendResponse(sessionCookie.domain);
-          }
-        });
-      });
-    });
+      for (const domain of orderedDomains) {
+        const cookies = await getAllCookies({name: "sid", domain, secure: true}, storeIds);
+        const sessionCookie = cookies.find(c => c.value.startsWith(orgId + "!") && c.domain != "help.salesforce.com");
+        if (sessionCookie) {
+          sendResponse(sessionCookie.domain);
+          return;
+        }
+      }
+      sendResponse(currentDomain);
+    })();
     return true; // Tell Chrome that we want to call sendResponse asynchronously.
   }
   if (request.message == "getSession") {
-    sfHost = request.sfHost;
-    chrome.cookies.get({url: "https://" + request.sfHost, name: "sid", storeId: sender.tab.cookieStoreId}, sessionCookie => {
+    (async () => {
+      await setSfHost(request.sfHost);
+      const storeIds = await getCookieStoreIds(sender);
+      const sessionCookie = await getCookie({url: "https://" + request.sfHost, name: "sid"}, storeIds);
       if (!sessionCookie) {
         sendResponse(null);
         return;
       }
-      let session = {key: sessionCookie.value, hostname: sessionCookie.domain};
-      sendResponse(session);
-    });
+      sendResponse({key: sessionCookie.value, hostname: sessionCookie.domain});
+    })();
     return true; // Tell Chrome that we want to call sendResponse asynchronously.
   } else if (request.message == "createWindow") {
     const brow = typeof browser === "undefined" ? chrome : browser;
@@ -58,12 +122,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   return false;
 });
-chrome.action.onClicked.addListener(() => {
+chrome.action.onClicked.addListener(async () => {
   chrome.runtime.sendMessage({
-    msg: "shortcut_pressed", sfHost, command: "open-popup"
+    msg: "shortcut_pressed", sfHost: await getSfHost(), command: "open-popup"
   });
 });
-chrome.commands?.onCommand.addListener((command) => {
+chrome.commands?.onCommand.addListener(async (command) => {
+  const host = await getSfHost();
   if (command.startsWith("link-")){
     let link;
     switch (command){
@@ -78,16 +143,17 @@ chrome.commands?.onCommand.addListener((command) => {
         break;
     }
     chrome.tabs.create({
-      url: `https://${sfHost}${link}`
+      url: `https://${host}${link}`
     });
 
   } else if (command.startsWith("open-")){
     chrome.runtime.sendMessage({
-      msg: "shortcut_pressed", command, sfHost
+      msg: "shortcut_pressed", command, sfHost: host
     });
   } else {
+    // getURL resolves to the right scheme per browser: chrome-, moz- or safari-web-extension://
     chrome.tabs.create({
-      url: `chrome-extension://${chrome.i18n.getMessage("@@extension_id")}/${command}.html?host=${sfHost}`
+      url: chrome.runtime.getURL(`${command}.html?host=${host}`)
     });
   }
 });
@@ -118,4 +184,5 @@ async function clearSobjectsListCache() {
     console.error("Error clearing sobjectsList cache on update:", e);
   }
 }
-chrome.runtime.setUninstallURL("https://forms.gle/y7LbTNsFqEqSrtyc6");
+// Safari implements setUninstallURL as a no-op, and older builds omit it entirely.
+chrome.runtime.setUninstallURL?.("https://forms.gle/y7LbTNsFqEqSrtyc6");

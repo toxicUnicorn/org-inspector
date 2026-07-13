@@ -129,7 +129,7 @@ class App extends React.PureComponent {
       apiStatisticsHref: "api-statistics.html?" + hostArg,
       latestNotesViewed:
         localStorage.getItem("latestReleaseNotesVersionViewed")
-          === this.props.addonVersion || browser.extension.inIncognitoContext,
+          === this.props.addonVersion || (browser.extension?.inIncognitoContext ?? false),
       useLegacyDownloadMetadata: JSON.parse(
         localStorage.getItem("useLegacyDlMetadata")
       ),

@@ -421,8 +421,9 @@ class App extends React.Component {
 
     // Create the CometD object.
     const cometd = new CometD();
-    // Detect Firefox to disable worker scheduler due to MV3 CSP restrictions with blob: URLs
-    const isFirefox = getBrowserType() === "moz";
+    // Firefox and Safari disallow blob: URL workers under the MV3 CSP, so the CometD
+    // worker scheduler has to be disabled there.
+    const isFirefox = ["moz", "safari"].includes(getBrowserType());
     cometd.configure({
       url: model.sfLink + "/cometd/" + apiVersion,
       requestHeaders: {

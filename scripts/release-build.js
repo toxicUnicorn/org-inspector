@@ -33,10 +33,14 @@
     }
   });
 
-  if (browserType === "firefox") {
-    fs.copySync("addon/manifest-firefox.json", `${target}/manifest.json`);
-    if (fs.existsSync(`${target}/manifest-firefox.json`)) {
-      fs.unlinkSync(`${target}/manifest-firefox.json`);
+  if (browserType === "firefox" || browserType === "safari") {
+    fs.copySync(`addon/manifest-${browserType}.json`, `${target}/manifest.json`);
+  }
+
+  // Only the browser's own manifest should ship; drop the other browsers' variants.
+  for (const variant of ["manifest-firefox.json", "manifest-safari.json"]) {
+    if (fs.existsSync(`${target}/${variant}`)) {
+      fs.unlinkSync(`${target}/${variant}`);
     }
   }
 

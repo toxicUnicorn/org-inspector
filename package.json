@@ -4,6 +4,8 @@
     "eslint": "eslint .",
     "firefox-release-build": "node scripts/release-build.js firefox",
     "chrome-release-build": "node scripts/release-build.js chrome",
+    "safari-release-build": "node scripts/release-build.js safari",
+    "safari-xcode": "npm run safari-release-build && node scripts/safari-convert.js",
     "build-flow-scanner": "node scripts/build-flow-scanner.js",
     "set-test-constants": "node scripts/set-test-constants-from-org.js",
     "test:e2e": "playwright test",

@@ -505,7 +505,12 @@ export function createSpinForMethod(context) {
 
 // OAuth utilities
 export function getBrowserType() {
-  return navigator.userAgent?.includes("Chrome") ? "chrome" : "moz";
+  const userAgent = navigator.userAgent ?? "";
+  // Chrome's user agent also contains "Safari", so it has to be tested first.
+  if (userAgent.includes("Chrome")) {
+    return "chrome";
+  }
+  return userAgent.includes("Safari") ? "safari" : "moz";
 }
 
 export function getExtensionId() {
@@ -518,9 +523,9 @@ export function getClientId(sfHost) {
 }
 
 export function getRedirectUri(page = "data-export.html") {
-  const browser = getBrowserType();
-  const extensionId = getExtensionId();
-  return `${browser}-extension://${extensionId}/${page}`;
+  // Safari's origin is safari-web-extension://<uuid>, which does not follow the
+  // "<browser>-extension://<id>" shape. getURL builds the right origin everywhere.
+  return chrome.runtime.getURL(page);
 }
 
 // PKCE (Proof Key for Code Exchange) utilities
