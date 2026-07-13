@@ -199,11 +199,7 @@ chrome.commands?.onCommand.addListener(async (command) => {
 });
 
 chrome.runtime.onInstalled.addListener(async (details) => {
-  if (details.reason === "install") {
-    chrome.tabs.create({
-      url: "https://tprouvot.github.io/Salesforce-Inspector-reloaded/welcome/"
-    });
-  } else if (details.reason === "update" && details.previousVersion?.startsWith("2.0")) {
+  if (details.reason === "update" && details.previousVersion?.startsWith("2.0")) {
     //TODO delete clearSobjectsListCache after 2.0.1 release, only for upgrade from 2.0.0 to 2.0.1
     await clearSobjectsListCache();
   }
@@ -224,5 +220,5 @@ async function clearSobjectsListCache() {
     console.error("Error clearing sobjectsList cache on update:", e);
   }
 }
-// Safari implements setUninstallURL as a no-op, and older builds omit it entirely.
-chrome.runtime.setUninstallURL?.("https://forms.gle/y7LbTNsFqEqSrtyc6");
+// Upstream points the uninstall URL at its own feedback form. A fork must not send its users
+// there, so it stays unset until this build has somewhere of its own to send them.
