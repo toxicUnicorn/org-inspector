@@ -76,6 +76,15 @@
     ...signing,
     `CONFIGURATION_BUILD_DIR=${BUILD_DIR}`, "build"]);
 
+  // Launch Services registers every app bundle it sees, including this build output, and
+  // Safari then lists the extension twice — once from here, once from /Applications.
+  const lsregister = "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister";
+  try {
+    execFileSync(lsregister, ["-u", path.join(BUILD_DIR, `${APP_NAME}.app`)], {stdio: "ignore"});
+  } catch {
+    // Not fatal: at worst the extension is listed twice until the copy is removed.
+  }
+
   console.log(`\nBuilt ${BUILD_DIR}/${APP_NAME}.app`);
   console.log(`Install it with:  cp -R "${BUILD_DIR}/${APP_NAME}.app" /Applications/ && open "/Applications/${APP_NAME}.app"`);
 })();

@@ -64,6 +64,18 @@ async function getAllCookies(details, storeIds) {
   return all;
 }
 
+function toBase64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  // btoa takes a binary string, and spreading a multi-megabyte array blows the argument
+  // limit, so build it in chunks.
+  let binary = "";
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   // Perform cookie operations in the background page, because not all foreground pages have access to the cookie API.
   if (request.message == "getSfHost") {
@@ -109,6 +121,34 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       sendResponse({key: sessionCookie.value, hostname: sessionCookie.domain});
     })();
     return true; // Tell Chrome that we want to call sendResponse asynchronously.
+  } else if (request.message == "apiFetch") {
+    // Safari enforces CORS on requests made from extension pages, and Salesforce does not
+    // send Access-Control-Allow-Origin for safari-web-extension:// origins, so every API call
+    // from the popup is blocked. The service worker's host permissions are not subject to
+    // CORS, so Safari routes its API traffic through here. See sfConn.rest in inspector.js.
+    (async () => {
+      try {
+        const response = await fetch(request.url, {
+          method: request.method,
+          headers: request.headers,
+          body: request.body,
+        });
+        const buffer = await response.arrayBuffer();
+        sendResponse({
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          // Messages are JSON-serialised, so binary bodies have to travel as base64.
+          body: request.binary ? toBase64(buffer) : new TextDecoder().decode(buffer),
+          binary: !!request.binary,
+        });
+      } catch (e) {
+        // status 0 is what XMLHttpRequest reports for a failed request, and the callers
+        // already treat it as "network error, offline or timeout".
+        sendResponse({status: 0, statusText: "", headers: {}, body: "", error: e.message});
+      }
+    })();
+    return true;
   } else if (request.message == "createWindow") {
     const brow = typeof browser === "undefined" ? chrome : browser;
     brow.windows.create({

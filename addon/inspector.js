@@ -7,6 +7,62 @@ export let apiVersion = localStorage.getItem("apiVersion") == null ? defaultApiV
 export let sessionError;
 const clientId = "Salesforce Inspector Reloaded";
 
+// Safari applies CORS to requests from extension pages, and Salesforce answers them without
+// an Access-Control-Allow-Origin header for the safari-web-extension:// origin, so every API
+// call is blocked. Host permissions do exempt the service worker, so on Safari the request is
+// handed to the background script and the reply is wrapped in an object that looks enough like
+// an XMLHttpRequest for the existing callers (including the ones asking for the raw response).
+const isSafari = navigator.userAgent.includes("Safari") && !navigator.userAgent.includes("Chrome");
+const binaryResponseTypes = ["blob", "arraybuffer"];
+
+function decodeBase64(base64) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+async function backgroundFetch(url, method, headers, body, responseType) {
+  const binary = binaryResponseTypes.includes(responseType);
+  const result = await chrome.runtime.sendMessage({message: "apiFetch", url, method, headers, body, binary});
+  if (!result) {
+    throw new Error("No response from the background script");
+  }
+
+  let response;
+  if (result.status === 0) {
+    response = null;
+  } else if (binary) {
+    const bytes = decodeBase64(result.body);
+    response = responseType == "blob" ? new Blob([bytes]) : bytes.buffer;
+  } else if (responseType == "json") {
+    try {
+      response = JSON.parse(result.body);
+    } catch {
+      response = null; // Matches XMLHttpRequest, which yields null for an unparseable json body.
+    }
+  } else if (responseType == "document") {
+    response = new DOMParser().parseFromString(result.body, "text/xml");
+  } else {
+    response = result.body;
+  }
+
+  const headerLookup = {};
+  for (const [name, value] of Object.entries(result.headers)) {
+    headerLookup[name.toLowerCase()] = value;
+  }
+
+  return {
+    status: result.status,
+    statusText: result.statusText,
+    response,
+    responseText: binary ? "" : result.body,
+    getResponseHeader: name => headerLookup[name.toLowerCase()] ?? null,
+  };
+}
+
 export let sfConn = {
 
   async getSession(sfHost) {
@@ -119,18 +175,17 @@ export let sfConn = {
     // Track API call start time for statistics
     const startTime = performance.now();
 
-    let xhr = new XMLHttpRequest();
     if (useCache) {
       url += (url.includes("?") ? "&" : "?") + "cache=" + Math.random();
     }
     const sfHost = "https://" + this.instanceHostname;
     const fullUrl = new URL(url, sfHost);
-    xhr.open(method, fullUrl.toString(), true);
 
+    const requestHeaders = {};
     if (api == "bulk") {
-      xhr.setRequestHeader("X-SFDC-Session", this.sessionId);
+      requestHeaders["X-SFDC-Session"] = this.sessionId;
     } else if (api == "normal") {
-      xhr.setRequestHeader("Authorization", "Bearer " + this.sessionId);
+      requestHeaders["Authorization"] = "Bearer " + this.sessionId;
     } else {
       throw new Error("Unknown api");
     }
@@ -139,13 +194,13 @@ export let sfConn = {
     const protectedHeaders = ["Sforce-Call-Options"];
     for (let [name, value] of Object.entries(headers)) {
       if (!protectedHeaders.includes(name)) {
-        xhr.setRequestHeader(name, value);
+        requestHeaders[name] = value;
       }
     }
 
     // Set default Content-Type header if body is present and Content-Type not provided by custom headers
     if (body !== undefined && !headers.hasOwnProperty("Content-Type")) {
-      xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+      requestHeaders["Content-Type"] = "application/json; charset=UTF-8";
     }
 
     if (body !== undefined) {
@@ -160,30 +215,51 @@ export let sfConn = {
 
     // Set default Accept header if not provided by custom headers
     if (!headers.hasOwnProperty("Accept")) {
-      xhr.setRequestHeader("Accept", "application/json; charset=UTF-8");
+      requestHeaders["Accept"] = "application/json; charset=UTF-8";
     }
 
     // Always set this header last to ensure it cannot be overridden
-    xhr.setRequestHeader("Sforce-Call-Options", `client=${clientId}`);
+    requestHeaders["Sforce-Call-Options"] = `client=${clientId}`;
 
-    xhr.responseType = responseType;
-    await new Promise((resolve, reject) => {
+    let xhr;
+    if (isSafari) {
+      let aborted = false;
       if (progressHandler) {
-        progressHandler.abort = () => {
-          let err = new Error("The request was aborted.");
-          err.name = "AbortError";
-          reject(err);
-          xhr.abort();
-        };
+        // The request itself runs in the background script and cannot be cancelled from here,
+        // so abort only detaches this caller from the result.
+        progressHandler.abort = () => { aborted = true; };
       }
-
-      xhr.onreadystatechange = () => {
-        if (xhr.readyState == 4) {
-          resolve();
+      xhr = await backgroundFetch(fullUrl.toString(), method, requestHeaders, body, responseType);
+      if (aborted) {
+        let err = new Error("The request was aborted.");
+        err.name = "AbortError";
+        throw err;
+      }
+    } else {
+      xhr = new XMLHttpRequest();
+      xhr.open(method, fullUrl.toString(), true);
+      for (const [name, value] of Object.entries(requestHeaders)) {
+        xhr.setRequestHeader(name, value);
+      }
+      xhr.responseType = responseType;
+      await new Promise((resolve, reject) => {
+        if (progressHandler) {
+          progressHandler.abort = () => {
+            let err = new Error("The request was aborted.");
+            err.name = "AbortError";
+            reject(err);
+            xhr.abort();
+          };
         }
-      };
-      xhr.send(body);
-    });
+
+        xhr.onreadystatechange = () => {
+          if (xhr.readyState == 4) {
+            resolve();
+          }
+        };
+        xhr.send(body);
+      });
+    }
 
     // Calculate duration and track statistics
     const duration = performance.now() - startTime;
@@ -289,11 +365,12 @@ export let sfConn = {
     // Track API call start time for statistics
     const startTime = performance.now();
 
-    let xhr = new XMLHttpRequest();
-    xhr.open("POST", "https://" + this.instanceHostname + wsdl.servicePortAddress + "?cache=" + Math.random(), true);
-    xhr.setRequestHeader("Content-Type", "text/xml");
-    xhr.setRequestHeader("SOAPAction", '""');
-    xhr.setRequestHeader("CallOptions", `client:${clientId}`);
+    const soapUrl = "https://" + this.instanceHostname + wsdl.servicePortAddress + "?cache=" + Math.random();
+    const soapHeaders = {
+      "Content-Type": "text/xml",
+      "SOAPAction": '""',
+      "CallOptions": `client:${clientId}`,
+    };
 
     let sessionHeaderKey = wsdl.apiName == "Metadata" ? "met:SessionHeader" : "SessionHeader";
     let sessionIdKey = wsdl.apiName == "Metadata" ? "met:sessionId" : "sessionId";
@@ -316,15 +393,25 @@ export let sfConn = {
       }
     });
 
-    xhr.responseType = "document";
-    await new Promise(resolve => {
-      xhr.onreadystatechange = () => {
-        if (xhr.readyState == 4) {
-          resolve(xhr);
-        }
-      };
-      xhr.send(requestBody);
-    });
+    let xhr;
+    if (isSafari) {
+      xhr = await backgroundFetch(soapUrl, "POST", soapHeaders, requestBody, "document");
+    } else {
+      xhr = new XMLHttpRequest();
+      xhr.open("POST", soapUrl, true);
+      for (const [name, value] of Object.entries(soapHeaders)) {
+        xhr.setRequestHeader(name, value);
+      }
+      xhr.responseType = "document";
+      await new Promise(resolve => {
+        xhr.onreadystatechange = () => {
+          if (xhr.readyState == 4) {
+            resolve(xhr);
+          }
+        };
+        xhr.send(requestBody);
+      });
+    }
 
     // Calculate duration and track statistics
     const duration = performance.now() - startTime;

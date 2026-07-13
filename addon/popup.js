@@ -14,6 +14,23 @@ if (typeof browser === "undefined") {
   var browser = chrome;
 }
 
+// Links carry target="_top" so that a plain click replaces the Salesforce page. Chrome and
+// Firefox handle a middle click themselves and open a new tab regardless of the target, but
+// Safari follows the target instead, redirecting the page the user is standing on.
+if (getBrowserType() === "safari") {
+  addEventListener("auxclick", e => {
+    if (e.button !== 1) {
+      return;
+    }
+    const link = e.target.closest?.("a[href]");
+    if (!link || link.getAttribute("href") === "#") {
+      return;
+    }
+    e.preventDefault();
+    window.open(link.href, "_blank");
+  });
+}
+
 {
   parent.postMessage(
     {
