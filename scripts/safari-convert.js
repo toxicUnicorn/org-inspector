@@ -61,12 +61,19 @@
 
   fs.emptyDirSync(BUILD_DIR);
 
-  // Ad-hoc signing ("-") is enough to run locally with "Allow Unsigned Extensions".
-  // Distributing to anyone else needs a real Developer ID and the paid Apple program.
+  // With SAFARI_TEAM_ID set, Xcode signs with your Apple Development certificate and Safari
+  // keeps the extension listed across restarts. A free Apple ID works, but its provisioning
+  // profile expires after 7 days — rebuild to renew.
+  // Without a team, the build falls back to ad-hoc signing, which means the extension only
+  // appears while Safari's "Allow Unsigned Extensions" is on (it resets on every quit).
+  const teamId = process.env.SAFARI_TEAM_ID;
+  const signing = teamId
+    ? ["-allowProvisioningUpdates", "CODE_SIGN_STYLE=Automatic", `DEVELOPMENT_TEAM=${teamId}`]
+    : ["CODE_SIGN_IDENTITY=-", "CODE_SIGN_STYLE=Manual", "DEVELOPMENT_TEAM=", "PROVISIONING_PROFILE_SPECIFIER="];
+
   run("xcodebuild", ["-project", path.join(PROJECT_DIR, APP_NAME, `${APP_NAME}.xcodeproj`),
     "-scheme", APP_NAME, "-configuration", "Debug",
-    "CODE_SIGN_IDENTITY=-", "CODE_SIGN_STYLE=Manual",
-    "DEVELOPMENT_TEAM=", "PROVISIONING_PROFILE_SPECIFIER=",
+    ...signing,
     `CONFIGURATION_BUILD_DIR=${BUILD_DIR}`, "build"]);
 
   console.log(`\nBuilt ${BUILD_DIR}/${APP_NAME}.app`);

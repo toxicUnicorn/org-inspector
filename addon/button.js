@@ -239,6 +239,12 @@ function initButton(sfHost, inInspector) {
         }, "*");
       }
 
+      // The popup registers its message listener on mount. If that happens after the user
+      // already opened it, it missed the record context, so re-send it now.
+      if (e.data.insextLoaded && rootEl.classList.contains("insext-active")) {
+        sendRecordId();
+      }
+
       togglePopup(e.data.insextOpenPopup, e.data.insextClosePopup);
       if (e.data.insextShowApiName) {
         let apiNamesClass = "field-api-name";
@@ -296,13 +302,16 @@ function initButton(sfHost, inInspector) {
         console.error("Copy failed: ", err);
       });
     }
-    function openPopup() {
+    function sendRecordId() {
       let activeContentElem = document.querySelector("div.windowViewMode-normal.active, section.oneConsoleTab div.windowViewMode-maximized.active.lafPageHost");
       let isFieldsPresent = activeContentElem ? !!activeContentElem.querySelector("record_flexipage-record-field > div, records-record-layout-item > div, div .forcePageBlockItemView") : false;
       popupEl.contentWindow.postMessage({insextUpdateRecordId: true,
         locationHref: location.href,
         isFieldsPresent
       }, "*");
+    }
+    function openPopup() {
+      sendRecordId();
       rootEl.classList.add("insext-active");
       // These event listeners are only enabled when the popup is active to avoid interfering with Salesforce when not using the inspector
       addEventListener("click", outsidePopupClick);
