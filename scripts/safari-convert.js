@@ -25,6 +25,9 @@
   // identifier is not prefixed by its parent's. Keeping them identical avoids that.
   const APP_NAME = process.env.SAFARI_APP_NAME || "OrgInspector";
   const BUNDLE_ID = process.env.SAFARI_BUNDLE_ID || `com.example.${APP_NAME}`;
+  // The Xcode target cannot contain a space (see above), so the name users actually see comes
+  // from CFBundleDisplayName instead.
+  const DISPLAY_NAME = process.env.SAFARI_DISPLAY_NAME || "Org Inspector";
   const EXTENSION_DIR = "target/safari/dist";
   const PROJECT_DIR = "target/safari/xcode";
   const BUILD_DIR = path.resolve("target/safari/build");
@@ -74,6 +77,7 @@
   run("xcodebuild", ["-project", path.join(PROJECT_DIR, APP_NAME, `${APP_NAME}.xcodeproj`),
     "-scheme", APP_NAME, "-configuration", "Debug",
     ...signing,
+    `INFOPLIST_KEY_CFBundleDisplayName=${DISPLAY_NAME}`,
     `CONFIGURATION_BUILD_DIR=${BUILD_DIR}`, "build"]);
 
   // Launch Services registers every app bundle it sees, including this build output, and
