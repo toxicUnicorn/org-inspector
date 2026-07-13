@@ -354,6 +354,13 @@ class App extends React.PureComponent {
   }
   async handleGenerateTokenClick(e, sfHost, clientId) {
     e.preventDefault();
+    // The OAuth flow needs a bare fetch to Salesforce's token endpoints, which Safari blocks by
+    // CORS, and a redirect_uri of safari-web-extension://<per-install-uuid>/ that cannot be
+    // registered as a Connected App callback. Cookie-session auth (the default) works without it.
+    if (getBrowserType() === "safari") {
+      alert("Access token generation is not available in Safari. Org Inspector uses your existing Salesforce session instead.");
+      return;
+    }
     try {
       // Fetch PKCE parameters from Salesforce
       const pkceParams = await getPKCEParameters(sfHost);
@@ -422,7 +429,7 @@ class App extends React.PureComponent {
                 h("div", {className: "slds-media__body"},
                   h("div", {className: "popup-header__name-title"},
                     h("h1", {},
-                      h("span", {className: "popup-header__title popup-title slds-truncate slds-text-align_center slds-p-left_small", title: "Salesforce Inspector Reloaded"}, "Salesforce Inspector Reloaded")
+                      h("span", {className: "popup-header__title popup-title slds-truncate slds-text-align_center slds-p-left_small", title: "Org Inspector"}, "Org Inspector")
                     )
                   )
                 )
@@ -692,7 +699,7 @@ class App extends React.PureComponent {
               },
               h("strong", {}, "Management")
             ),
-            isOptionEnabled("generate-token", hideButtonsOption)
+            isOptionEnabled("generate-token", hideButtonsOption) && browser !== "safari"
               ? h(
                 "div",
                 {

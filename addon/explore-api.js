@@ -225,7 +225,7 @@ class Model {
         table.push(row.cells);
       }
       let csvSignature = csvSerialize([
-        ["Salesforce Inspector - API Explorer"],
+        ["Org Inspector - API Explorer"],
         ["URL", this.title],
         ["Rows", tView.name],
         ["Extract time", new Date().toISOString()]

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Org Inspector</title>
+    <link rel="stylesheet" href="../Style.css">
+</head>
+<body>
+    <main>
+        <header class="hero">
+            <img src="../Icon.png" alt="Org Inspector" class="logo" width="96" height="96">
+            <h1>Org Inspector</h1>
+            <p class="tagline">Data &amp; metadata tools for Salesforce, in Safari.</p>
+        </header>
+
+        <section class="status" aria-live="polite">
+            <p class="state-on">Org Inspector’s extension is currently on.</p>
+            <p class="state-off">Org Inspector’s extension is currently off. Turn it on in the Extensions section of Safari Settings.</p>
+            <p class="state-unknown">You can turn on Org Inspector’s extension in the Extensions section of Safari Settings.</p>
+            <button class="open-preferences">Open Safari Settings…</button>
+        </section>
+
+        <section>
+            <h2>Getting started</h2>
+            <ol class="steps">
+                <li>Open <strong>Safari&nbsp;›&nbsp;Settings&nbsp;›&nbsp;Extensions</strong> and turn on <strong>Org&nbsp;Inspector</strong>.</li>
+                <li>Click <strong>Edit&nbsp;Websites</strong> (or the extension’s permissions) and set access to <strong>Allow on Every Website</strong>, or at least allow your Salesforce domains.</li>
+                <li>Open any Salesforce org and click the Org&nbsp;Inspector arrow on the right edge of the page.</li>
+            </ol>
+        </section>
+
+        <section>
+            <h2>What it does</h2>
+            <ul class="features">
+                <li>Inspect and edit any record’s fields with <strong>Show&nbsp;All&nbsp;Data</strong>.</li>
+                <li>Run SOQL queries and export results with <strong>Data&nbsp;Export</strong>.</li>
+                <li>Insert, update, and upsert records with <strong>Data&nbsp;Import</strong>.</li>
+                <li>Explore the REST and Tooling APIs, org limits, and metadata.</li>
+                <li>Browse field- and object-level metadata directly from the Salesforce UI.</li>
+            </ul>
+        </section>
+
+        <section class="privacy">
+            <h2>Your data stays yours</h2>
+            <p>
+                Org Inspector reads your existing Salesforce session (the <code>sid</code> cookie) so it can
+                call the same APIs you already have access to, on your behalf. It talks only to your own
+                Salesforce org. It sends <strong>nothing</strong> to the developer or any third party — no
+                analytics, no tracking, no telemetry. Query history and preferences are stored locally in your
+                browser and can be cleared at any time.
+            </p>
+            <p class="links">
+                <a href="https://echekan.github.io/org-inspector/privacy/">Privacy Policy</a>
+                <a href="https://github.com/echekan/org-inspector">Source &amp; Support</a>
+            </p>
+        </section>
+
+        <details class="acknowledgements">
+            <summary>Acknowledgements &amp; licenses</summary>
+            <p>
+                Org Inspector is a fork of
+                <a href="https://github.com/tprouvot/Salesforce-Inspector-reloaded">Salesforce Inspector Reloaded</a>
+                by Thomas Prouvot, itself based on the original Salesforce Inspector by Søren Krabbe — both under
+                the MIT License. It bundles React (BSD&nbsp;3-Clause), CometD (Apache&nbsp;2.0), PrismJS (MIT), and
+                Lightning Flow Scanner Core (MIT). Full license texts ship with the extension in
+                <code>THIRD_PARTY_NOTICES.md</code> and <code>LICENSE</code>.
+            </p>
+        </details>
+
+        <footer>
+            <p class="version">Version <span id="version">{{VERSION}}</span></p>
+            <p class="disclaimer">
+                Org Inspector is an independent tool and is not affiliated with, endorsed by, or sponsored by
+                Salesforce, Inc. Salesforce is a trademark of Salesforce, Inc.
+            </p>
+        </footer>
+    </main>
+    <script src="../Script.js"></script>
+</body>
+</html>

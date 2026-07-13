@@ -1,0 +1,146 @@
+:root {
+    --brand: #c9a94a;
+    --brand-strong: #b2913a;
+    --bg: #ffffff;
+    --card: #f6f6f8;
+    --text: #1d1d1f;
+    --muted: #6b6b70;
+    --border: #e4e4e8;
+    --link: #0b6bcb;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --brand: #d8be5f;
+        --brand-strong: #e6cf78;
+        --bg: #1e1e20;
+        --card: #2a2a2d;
+        --text: #f2f2f4;
+        --muted: #a0a0a6;
+        --border: #3a3a3e;
+        --link: #6cb2ff;
+    }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.55 -apple-system, "SF Pro Text", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 32px 28px 40px;
+}
+
+.hero {
+    text-align: center;
+    padding-bottom: 8px;
+}
+
+.logo {
+    border-radius: 22%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+}
+
+h1 {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 14px 0 4px;
+}
+
+.tagline {
+    color: var(--muted);
+    margin: 0;
+    font-size: 15px;
+}
+
+h2 {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 28px 0 10px;
+}
+
+section, .acknowledgements {
+    border-top: 1px solid var(--border);
+    padding-top: 4px;
+}
+
+.status {
+    text-align: center;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    margin-top: 22px;
+}
+
+/* Visibility is driven by a body class set from ViewController via Script.js. Scope the
+   hiding rule to the status paragraphs: a bare .state-on selector would also match
+   <body class="state-on"> and take the whole page down with it. */
+.status p { display: none; margin: 0 0 12px; font-weight: 500; }
+body.state-on .state-on { display: block; color: var(--brand-strong); }
+body.state-off .state-off { display: block; }
+body:not(.state-on):not(.state-off) .state-unknown { display: block; }
+
+button.open-preferences {
+    appearance: none;
+    border: 0;
+    background: var(--brand);
+    color: #241d05;
+    font: inherit;
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+button.open-preferences:hover { background: var(--brand-strong); }
+
+ol.steps, ul.features { margin: 0; padding-left: 20px; }
+ol.steps li, ul.features li { margin: 7px 0; }
+
+code {
+    font: 12px/1 "SF Mono", ui-monospace, monospace;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+}
+
+.links {
+    display: flex;
+    gap: 18px;
+    margin-top: 12px;
+}
+
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.acknowledgements {
+    margin-top: 28px;
+}
+.acknowledgements summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--muted);
+    padding: 8px 0;
+}
+.acknowledgements p { color: var(--muted); font-size: 13px; }
+
+footer {
+    margin-top: 30px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+}
+.version { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+.disclaimer { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 0; }

@@ -44,6 +44,14 @@
     }
   }
 
+  // MIT requires the licence text to travel with every copy, and addon/ does not contain it,
+  // so copy the root notices into the build output that becomes the shipped extension / .app.
+  for (const notice of ["LICENSE", "THIRD_PARTY_NOTICES.md"]) {
+    if (fs.existsSync(notice)) {
+      fs.copySync(notice, `${target}/${notice}`);
+    }
+  }
+
   // Use minified versions of React. The development versions contain extra checks and validations, which gives better error messages when developing, but are slower.
   replaceInFileSync({
     files: target + "/*.html",

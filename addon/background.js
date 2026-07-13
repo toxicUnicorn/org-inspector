@@ -64,6 +64,42 @@ async function getAllCookies(details, storeIds) {
   return all;
 }
 
+// The apiFetch handler runs privileged, CORS-exempt requests with a caller-supplied URL and
+// Authorization header. It is only reached from the extension's own pages today (there is no
+// externally_connectable, and no content script relays into it), but those pages render
+// untrusted org data, so an XSS there must not turn this into an open proxy for the session
+// token. Restrict it to the extension's own senders and to the Salesforce hosts we already
+// hold permissions for.
+function isTrustedSender(sender) {
+  // A tab sender means a content script / web page, never one of our extension pages.
+  if (sender?.tab) {
+    return false;
+  }
+  const selfOrigin = chrome.runtime.getURL("");
+  return sender?.id === chrome.runtime.id && (!sender.url || sender.url.startsWith(selfOrigin));
+}
+
+// Build host matchers once from the manifest so the allowlist never drifts from the granted
+// permissions. "https://*.force.com/*" becomes a suffix test for ".force.com" plus the apex.
+const allowedHostSuffixes = (chrome.runtime.getManifest().host_permissions || [])
+  .map(pattern => { try { return new URL(pattern).hostname.replace(/^\*\./, "."); } catch { return null; } })
+  .filter(Boolean);
+
+function isAllowedHost(hostname) {
+  return allowedHostSuffixes.some(suffix =>
+    hostname === suffix.slice(1) || hostname.endsWith(suffix));
+}
+
+function isAllowedApiUrl(rawUrl) {
+  let url;
+  try {
+    url = new URL(rawUrl);
+  } catch {
+    return false;
+  }
+  return url.protocol === "https:" && isAllowedHost(url.hostname);
+}
+
 function toBase64(buffer) {
   const bytes = new Uint8Array(buffer);
   // btoa takes a binary string, and spreading a multi-megabyte array blows the argument
@@ -110,6 +146,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // Tell Chrome that we want to call sendResponse asynchronously.
   }
   if (request.message == "getSession") {
+    // sfHost ultimately originates from a postMessage the popup accepts from its parent page,
+    // whose origin it cannot verify. An attacker-controlled value would be persisted and later
+    // used to build a chrome.tabs.create URL on a keyboard shortcut, so reject non-Salesforce
+    // hosts before trusting it.
+    if (typeof request.sfHost != "string" || !isAllowedHost(request.sfHost)) {
+      sendResponse(null);
+      return false;
+    }
     (async () => {
       await setSfHost(request.sfHost);
       const storeIds = await getCookieStoreIds(sender);
@@ -126,12 +170,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // send Access-Control-Allow-Origin for safari-web-extension:// origins, so every API call
     // from the popup is blocked. The service worker's host permissions are not subject to
     // CORS, so Safari routes its API traffic through here. See sfConn.rest in inspector.js.
+    if (!isTrustedSender(sender) || !isAllowedApiUrl(request.url)) {
+      sendResponse({status: 0, statusText: "", headers: {}, body: "", error: "Request not allowed"});
+      return true;
+    }
     (async () => {
       try {
         const response = await fetch(request.url, {
           method: request.method,
           headers: request.headers,
           body: request.body,
+          // The session travels in the Authorization/X-SFDC-Session header, never as an ambient
+          // cookie, so make sure no cookie rides along regardless of Safari's SW defaults.
+          credentials: "omit",
         });
         const buffer = await response.arrayBuffer();
         sendResponse({
@@ -169,6 +220,11 @@ chrome.action.onClicked.addListener(async () => {
 });
 chrome.commands?.onCommand.addListener(async (command) => {
   const host = await getSfHost();
+  // getSession only persists validated Salesforce hosts, but guard here too: a stale or bad
+  // value must never be turned into a navigation to a non-Salesforce origin.
+  if (host && !isAllowedHost(host)) {
+    return;
+  }
   if (command.startsWith("link-")){
     let link;
     switch (command){
