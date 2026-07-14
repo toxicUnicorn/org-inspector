@@ -52,7 +52,7 @@ extension.
 Org Inspector is open source. You can read the code, or watch the network traffic in Safari's Web
 Inspector and confirm that the only hosts contacted are your own Salesforce domains.
 
-Source: https://github.com/echekan/org-inspector
+Source: https://github.com/ChekeEdd/org-inspector
 
 ## Children
 
@@ -70,7 +70,7 @@ Any change to this policy will be published at this URL with an updated effectiv
 
 ## Contact
 
-Questions: open an issue at https://github.com/echekan/org-inspector/issues
+Questions: open an issue at https://github.com/ChekeEdd/org-inspector/issues
 
 ---
 

@@ -1,7 +1,7 @@
-site_name: Salesforce Inspector reloaded
-site_url: https://tprouvot.github.io/Salesforce-Inspector-reloaded/
-repo_url: https://github.com/tprouvot/Salesforce-Inspector-reloaded
-site_author: Thomas Prouvot
+site_name: Org Inspector
+site_url: https://chekeedd.github.io/org-inspector/
+repo_url: https://github.com/ChekeEdd/org-inspector
+site_author: Eduard Chekan
 
 theme:
   name: material
@@ -102,4 +102,4 @@ nav:
       - Developer Notes: dev-notes.md
 
 copyright: |
-  &copy; 2025 <a href="https://github.com/tprouvot" target="_blank" rel="noopener">Thomas Prouvot</a>
+  Based on <a href="https://github.com/tprouvot/Salesforce-Inspector-reloaded" target="_blank" rel="noopener">Salesforce Inspector Reloaded</a> &copy; 2023 Thomas Prouvot (MIT). Fork &copy; 2026 Eduard Chekan. Not affiliated with Salesforce, Inc.

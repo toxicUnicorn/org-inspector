@@ -2,6 +2,7 @@ name: ci
 on:
   push:
     branches:
+      - safari
       - main
       - beta
 permissions:
