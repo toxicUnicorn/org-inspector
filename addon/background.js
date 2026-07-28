@@ -71,12 +71,18 @@ async function getAllCookies(details, storeIds) {
 // token. Restrict it to the extension's own senders and to the Salesforce hosts we already
 // hold permissions for.
 function isTrustedSender(sender) {
-  // A tab sender means a content script / web page, never one of our extension pages.
-  if (sender?.tab) {
+  // Only the extension's own pages may drive privileged, session-bearing fetches. Identify them
+  // by an extension-origin URL: a content script or web page reports the web page's URL here even
+  // though it shares the extension id. We must NOT key off the absence of sender.tab — on Safari
+  // our own pages carry a tab (the popup runs as an iframe inside the Salesforce tab, and tools
+  // like Data Export run as full extension tabs), so requiring no tab rejected every legitimate
+  // call and broke all Safari API traffic. The isAllowedApiUrl host allowlist below still confines
+  // the session token to Salesforce hosts.
+  if (sender?.id !== chrome.runtime.id) {
     return false;
   }
   const selfOrigin = chrome.runtime.getURL("");
-  return sender?.id === chrome.runtime.id && (!sender.url || sender.url.startsWith(selfOrigin));
+  return typeof sender.url === "string" && sender.url.startsWith(selfOrigin);
 }
 
 // Build host matchers once from the manifest so the allowlist never drifts from the granted
