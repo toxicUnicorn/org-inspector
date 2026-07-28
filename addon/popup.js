@@ -871,33 +871,6 @@ class App extends React.PureComponent {
             {
               className:
               "slds-col slds-size_1-of-12 slds-text-align_right slds-icon_container",
-              title: "Donate",
-            },
-            h(
-              "a",
-              {
-                href: "https://tprouvot.github.io/Salesforce-Inspector-reloaded/donate/",
-                target: linkTarget,
-              },
-              h(
-                "svg",
-                {
-                  className:
-                  "slds-button slds-icon_x-small slds-icon-text-default slds-m-top_xxx-small",
-                  viewBox: "0 0 52 52",
-                },
-                h("use", {
-                  xlinkHref: "symbols.svg#heart",
-                  style: {fill: "#9c9c9c"},
-                })
-              )
-            )
-          ),
-          h(
-            "div",
-            {
-              className:
-              "slds-col slds-size_1-of-12 slds-text-align_right slds-icon_container",
               title: "Documentation",
             },
             h(

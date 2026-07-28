@@ -9,7 +9,8 @@ data and metadata from the Salesforce UI. This policy explains exactly what it t
 
 **Org Inspector collects nothing.** It sends no data to the developer, and no data to any third
 party. There is no analytics, no telemetry, no tracking, no advertising, and no third-party SDK
-of any kind. All traffic goes directly between your browser and your own Salesforce org.
+of any kind. All traffic goes directly between your browser and Salesforce-operated domains — your
+own Salesforce org, plus Salesforce's public status service (see below).
 
 ## What it accesses, and why
 
@@ -26,6 +27,11 @@ and features your Salesforce user is already permitted to see. It grants no new 
 Because the Safari extension model applies CORS to extension pages, these API calls are issued by
 the extension's own background script rather than the page. They still go only to your Salesforce
 org's hosts.
+
+**Salesforce's status service.** To show whether your org's instance is up or has planned
+maintenance, Org Inspector queries Salesforce's public status API at `api.status.salesforce.com`.
+The only thing sent is your org's instance name (for example `NA123`) — no session, no records, and
+nothing that identifies you. This is a Salesforce-operated service, not a third party.
 
 ## What is stored on your device
 
@@ -50,7 +56,8 @@ extension.
 ## Verifying this
 
 Org Inspector is open source. You can read the code, or watch the network traffic in Safari's Web
-Inspector and confirm that the only hosts contacted are your own Salesforce domains.
+Inspector and confirm that the only hosts contacted are Salesforce-operated domains — your own
+Salesforce org and Salesforce's public status service.
 
 Source: https://github.com/ChekeEdd/org-inspector
 
