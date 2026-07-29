@@ -449,9 +449,7 @@ class App extends React.PureComponent {
           link: {
             text: "See What's New",
             props: {
-              href:
-                "https://tprouvot.github.io/Salesforce-Inspector-reloaded/release-note/#version-"
-                + addonVersion.replace(".", ""),
+              href: "https://toxicunicorn.github.io/org-inspector/release-note/",
               target: "_blank",
               onClick: () => this.updateReleaseNotesViewed(addonVersion),
             },
@@ -819,9 +817,7 @@ class App extends React.PureComponent {
             h(
               "a",
               {
-                href:
-                "https://tprouvot.github.io/Salesforce-Inspector-reloaded/release-note/#version-"
-                + addonVersion.replace(".", ""),
+                href: "https://toxicunicorn.github.io/org-inspector/release-note/",
                 title: "Release note",
                 target: linkTarget,
               },
@@ -849,7 +845,7 @@ class App extends React.PureComponent {
             h(
               "a",
               {
-                href: "https://tprouvot.github.io/Salesforce-Inspector-reloaded/how-to/?h=short#customize-extensions-shortcuts",
+                href: "https://toxicunicorn.github.io/org-inspector/how-to/#customize-extensions-shortcuts",
                 target: linkTarget,
               },
               h(
@@ -876,7 +872,7 @@ class App extends React.PureComponent {
             h(
               "a",
               {
-                href: "https://tprouvot.github.io/Salesforce-Inspector-reloaded/",
+                href: "https://toxicunicorn.github.io/org-inspector/",
                 target: linkTarget,
               },
               h(
