@@ -5,7 +5,9 @@ export let defaultApiVersion = "66.0";
 export let apiVersion = localStorage.getItem("apiVersion") == null ? defaultApiVersion : localStorage.getItem("apiVersion");
 
 export let sessionError;
-const clientId = "Salesforce Inspector Reloaded";
+// Identifies this extension in the Sforce-Call-Options / SOAP CallOptions header, which is what
+// shows up in the API logs of the orgs our users connect to. Unrelated to the OAuth consumer key.
+const clientId = "Org Inspector";
 
 // Safari applies CORS to requests from extension pages, and Salesforce answers them without
 // an Access-Control-Allow-Origin header for the safari-web-extension:// origin, so every API
