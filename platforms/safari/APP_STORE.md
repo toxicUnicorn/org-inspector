@@ -110,6 +110,34 @@ The extension does nothing until you are on a Salesforce page with a live sessio
 - Provide a free **Developer Edition** org (https://developer.salesforce.com/signup) login:
   - Username: `[reviewer-org-username]`
   - Password: `[reviewer-org-password]`
+
+### Stop Salesforce from emailing the reviewer a verification code
+
+By default Salesforce challenges every login from an unrecognised device or IP and mails a code to
+the org's own address. App Review logs in from Apple's network, so **they get the challenge and the
+code goes to you** — they cannot complete sign-in, and the submission is rejected under 2.1. Do all
+of the following in the demo org before submitting.
+
+1. **Trusted IP Ranges** (this is the setting that actually removes the emailed code):
+   Setup ▸ quick find `Network Access` ▸ Trusted IP Ranges ▸ New →
+   Start `0.0.0.0`, End `255.255.255.255`. Logins from a trusted range skip device activation.
+2. **Profile login IP ranges**, as a second layer: Setup ▸ Users ▸ Profiles ▸ (reviewer's profile) ▸
+   Login IP Ranges ▸ New → the same `0.0.0.0`–`255.255.255.255`.
+3. **Waive MFA** for that user: Setup ▸ Permission Sets ▸ New, enable the system permission
+   `Waive Multi-Factor Authentication for Exempt Users` (search "Waive Multi-Factor"), then assign
+   the permission set to the reviewer's user. Salesforce enforces MFA on direct logins otherwise.
+4. **Password must not expire**: Setup ▸ Security ▸ Password Policies → *User passwords expire in* =
+   **Never expires**. Review can happen weeks later, and again for each update.
+5. **No login-hours restriction** on the profile — Apple reviews across time zones.
+6. Optional but helpful: Setup ▸ Session Settings → untick *Lock sessions to the IP address from
+   which they originated*, so the reviewer's session survives a network change.
+
+Then **verify it works**: open a private window on a VPN in another country and sign in with the
+reviewer credentials. If no code is requested, App Review will get through.
+
+Only ever do this in a throwaway demo org that holds no real data — it deliberately disables the
+org's login protections. Also sign in to the org every couple of months so Salesforce does not
+deactivate it for inactivity, and keep the credentials working for future updates.
 - Review notes (paste this):
 
   > 1. Sign in to Safari, then open Safari ▸ Settings ▸ Extensions and enable "Org Inspector".
