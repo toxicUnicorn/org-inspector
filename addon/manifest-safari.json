@@ -1,6 +1,6 @@
 {
   "name": "Org Inspector",
-  "description": "Productivity tools to inspect Salesforce data and metadata directly from the UI. Not affiliated with, endorsed by, or sponsored by Salesforce, Inc.",
+  "description": "Productivity tools to inspect Salesforce data and metadata. Not affiliated with Salesforce, Inc.",
   "version": "2.1.0",
   "version_name": "2.1",
   "icons": {
