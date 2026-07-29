@@ -24,3 +24,6 @@ tests/coverage/
 
 # Local test constants (contains org credentials)
 tests/e2e/test-constants.local.js
+
+# Local App Review notes (contains the demo org login given to Apple)
+platforms/safari/app-review.local.md

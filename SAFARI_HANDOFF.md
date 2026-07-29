@@ -11,9 +11,10 @@ Everything is committed — see `git log`. The extension works end-to-end on Saf
 
 1. Install **full Xcode** (from the App Store — the Command Line Tools alone lack the converter).
 2. `npm install` (node_modules is not in the zip).
-3. In Xcode ▸ Settings ▸ Accounts, sign in with the Apple ID **edwardchekanua@protonmail.com** so the
-   signing certificate is available. This creates a new **Team ID** on that Mac — it will differ from
-   the one baked in below; use the new one.
+3. In Xcode ▸ Settings ▸ Accounts, sign in with the Apple ID that owns the Developer Program
+   membership, so the signing certificate is available. The **Team ID is the same on every Mac** —
+   it belongs to the account, not the machine. Only the Apple Development certificate is per-Mac,
+   and Xcode issues it for you on first build.
 4. Point the toolchain at Xcode:
    `export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`
 
@@ -22,21 +23,25 @@ Everything is committed — see `git log`. The extension works end-to-end on Saf
 ```bash
 export SAFARI_APP_NAME=OrgInspector
 export SAFARI_BUNDLE_ID=com.echekan.OrgInspector
-export SAFARI_TEAM_ID=<YOUR_TEAM_ID_ON_THIS_MAC>
+export SAFARI_TEAM_ID=2GL7FWJDW5
 export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 npm run safari-xcode
 cp -R target/safari/build/OrgInspector.app /Applications/ && open /Applications/OrgInspector.app
 ```
 
 Then in Safari: Settings ▸ Extensions ▸ enable **Org Inspector** ▸ grant "Allow on Every Website".
-(With a free Apple profile the signature expires after 7 days — just rebuild to renew.)
+Build with `SAFARI_TEAM_ID` set, or the app is only ad-hoc signed and Safari hides the extension
+until you turn on Develop ▸ Allow Unsigned Extensions.
 
 ## Key facts
 
-- **GitHub handle:** `toxicUnicorn`. Repo assumed to be `org-inspector`. Push with:
-  `git remote add origin https://github.com/toxicUnicorn/org-inspector.git && git push -u origin safari`
+- **Repo:** https://github.com/toxicUnicorn/org-inspector, default branch `safari`. `upstream` still
+  points at tprouvot/Salesforce-Inspector-reloaded. A fresh clone may be shallow — if a push fails
+  with "index-pack failed", run `git fetch --unshallow upstream` first.
 - **Bundle id:** `com.echekan.OrgInspector` (reverse-DNS; does NOT need to match the GitHub handle).
-- **Team ID from the original Mac was `2GL7FWJDW5`** — it will be different on the new Mac; regenerate.
+- **Team ID `2GL7FWJDW5`** — the paid Individual team, the same on every Mac.
+- The demo-org login handed to App Review lives in `platforms/safari/app-review.local.md`, which is
+  git-ignored. Never put those credentials in a tracked file.
 - The Xcode project is disposable and regenerated under `target/` (gitignored) each build. All
   committed customisation lives in **`platforms/safari/`** (container-app UI, entitlements, icons,
   ExportOptions) and is overlaid by `scripts/safari-convert.js`.
@@ -57,15 +62,17 @@ Code (branch `safari`, commits `d442047`…`d218464`):
 
 ## What is left (in order)
 
-1. **Push the fork to GitHub** (`toxicUnicorn/org-inspector`) and enable GitHub Pages so the privacy
-   policy is live at `https://toxicunicorn.github.io/org-inspector/privacy/`. Steps are in
-   `platforms/safari/APP_STORE.md` → "Hosting the privacy policy".
-2. **Smoke-test the session/record flow** after the security changes to `background.js` (open the
-   popup on a record, confirm Show All Data / Data Export still return data). The validation logic
-   should pass legitimate `*.salesforce.com` / `*.force.com` hosts, but this path wasn't re-tested
-   after the change.
-3. **When the Apple Developer Program is Active** (was Pending on 2026-07-13): register the two App
-   IDs, create the App Store Connect record, then `npm run safari-archive-appstore` and upload.
+Done since this file was written: the fork is pushed, GitHub Pages serves the docs and privacy
+policy, the session/record flow is smoke-tested against a real org, and the docs and in-app links
+are rebranded off upstream.
+
+1. Register the two App IDs (`com.echekan.OrgInspector` and `…​.Extension`) in the Developer portal
+   and create the macOS record in App Store Connect.
+2. Fill App Review Information from `platforms/safari/app-review.local.md` (git-ignored).
+3. `npm run safari-archive-appstore` with the env vars above, then upload the `.pkg` via Transporter.
+
+Full checklist, including the demo-org settings that stop Salesforce emailing the reviewer a
+verification code, is in `platforms/safari/APP_STORE.md`.
    Full field-by-field guide (metadata, nutrition labels = "Data Not Collected", reviewer sign-in) is
    in `platforms/safari/APP_STORE.md`.
 4. Provide a free **Developer Edition** org login in App Store Connect ▸ App Review Information, or
