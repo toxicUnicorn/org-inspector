@@ -118,11 +118,17 @@ the org's own address. App Review logs in from Apple's network, so **they get th
 code goes to you** — they cannot complete sign-in, and the submission is rejected under 2.1. Do all
 of the following in the demo org before submitting.
 
-1. **Trusted IP Ranges** (this is the setting that actually removes the emailed code):
+1. **Trusted IP Ranges** — this is the only setting that actually suppresses the emailed code, and
+   it is matched on the *login IP*, so it has to cover Apple:
    Setup ▸ quick find `Network Access` ▸ Trusted IP Ranges ▸ New →
-   Start `0.0.0.0`, End `255.255.255.255`. Logins from a trusted range skip device activation.
-2. **Profile login IP ranges**, as a second layer: Setup ▸ Users ▸ Profiles ▸ (reviewer's profile) ▸
-   Login IP Ranges ▸ New → the same `0.0.0.0`–`255.255.255.255`.
+   Start `17.0.0.0`, End `17.255.255.255`.
+   Apple owns the whole `17.0.0.0/8` block and App Review signs in from Apple's network. Do **not**
+   try `0.0.0.0`–`255.255.255.255`: Salesforce caps a single range at 33,554,432 addresses (a /7)
+   and rejects it with "The range specified is too large". Apple's /8 is 16.7M, so it fits.
+2. **Profile login IP ranges**: Setup ▸ Users ▸ Profiles ▸ (reviewer's profile) ▸ Login IP Ranges ▸
+   New → `0.0.0.0`–`255.255.255.255`. Profile ranges accept the full space. Note this only controls
+   *who may log in from where* — it does not remove the verification challenge, so it is not a
+   substitute for step 1.
 3. **Waive MFA** for that user: Setup ▸ Permission Sets ▸ New, enable the system permission
    `Waive Multi-Factor Authentication for Exempt Users` (search "Waive Multi-Factor"), then assign
    the permission set to the reviewer's user. Salesforce enforces MFA on direct logins otherwise.
@@ -132,8 +138,14 @@ of the following in the demo org before submitting.
 6. Optional but helpful: Setup ▸ Session Settings → untick *Lock sessions to the IP address from
    which they originated*, so the reviewer's session survives a network change.
 
-Then **verify it works**: open a private window on a VPN in another country and sign in with the
-reviewer credentials. If no code is requested, App Review will get through.
+Then **sanity-check it**: open a private window on a VPN in another country and sign in with the
+reviewer credentials. You cannot test from Apple's own network, so this only proves the account,
+password and MFA waiver are fine — a challenge from a non-Apple IP is expected and not a problem,
+as long as step 1 covers `17.0.0.0/8`.
+
+Because that last bit cannot be verified from outside, add a fallback line to the review notes
+offering to supply a code on request (see the notes below). It costs nothing and turns a silent
+rejection into a question.
 
 Only ever do this in a throwaway demo org that holds no real data — it deliberately disables the
 org's login protections. Also sign in to the org every couple of months so Salesforce does not
@@ -149,6 +161,10 @@ deactivate it for inactivity, and keep the credentials working for future update
   >
   > Org Inspector reuses the logged-in Salesforce session cookie to call Salesforce's official APIs
   > on the user's behalf. No data is sent anywhere except the user's own Salesforce org.
+  >
+  > This demo org is configured to accept sign-in without an identity challenge. If Salesforce does
+  > ask for a verification code, please contact us at [your-support-email] and we will provide it
+  > straight away — the code is mailed to the org owner and we monitor that inbox during review.
 
 ## Screenshots
 
