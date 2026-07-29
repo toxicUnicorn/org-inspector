@@ -45,8 +45,7 @@ session you are already logged in with. Highlights:
 - **Popup shortcuts** — org/instance info, setup navigation search, and user actions (reset password,
   unfreeze, copy id).
 
-Feature guides live in the upstream project's [documentation](https://tprouvot.github.io/Salesforce-Inspector-reloaded/),
-which the Safari build tracks closely.
+Feature guides live in the [documentation site](https://toxicunicorn.github.io/org-inspector/).
 
 ## Privacy
 
@@ -68,8 +67,8 @@ To run an unreleased build yourself, see [Building from source](#building-from-s
 ## Use with a Connected App
 
 In orgs where **API Access Control** is enabled you must configure a Connected App and generate an
-access token. Follow the steps in the upstream
-[how-to documentation](https://tprouvot.github.io/Salesforce-Inspector-reloaded/how-to/#use-sf-inspector-with-a-connected-app).
+access token. Follow the steps in the
+[how-to documentation](https://toxicunicorn.github.io/org-inspector/how-to/#use-org-inspector-with-a-connected-app).
 
 ## Support
 

@@ -1,5 +1,25 @@
 # Release Notes
 
+## Org Inspector (Safari) 2.1
+
+First Safari release. Org Inspector is a Safari/macOS port of Salesforce Inspector Reloaded — the
+feature set below is inherited from upstream 2.1; these entries cover what the port changes.
+
+- Safari Web Extension support, packaged as a macOS app for the Mac App Store.
+- Salesforce API traffic is routed through the background service worker: Safari applies CORS to
+  extension pages and Salesforce does not allow the `safari-web-extension://` origin, so the calls
+  are made from the worker, which is not subject to CORS. The session token never leaves the
+  Salesforce hosts the extension already holds permissions for.
+- Cookie lookups pass an explicit store id, required since Safari 18.
+- Fixed the record context not reaching the popup on Safari.
+- Renamed to Org Inspector, with upstream's donation, welcome and feedback links removed.
+
+**Known Safari limitation:** after quitting and reopening Safari, the inspector arrow is missing on
+tabs restored from the previous session until the page is reloaded once. Safari does not re-run
+content scripts in restored tabs, and does not wake the extension's background worker for them.
+
+The history below is the upstream Salesforce Inspector Reloaded changelog, kept for reference.
+
 ## Version 2.1
 
 - `Metadata Retrieve` Fix sort preference (`Sort metadata by`) not persisting due to misspelled localStorage key

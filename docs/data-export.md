@@ -54,7 +54,7 @@ Example:
 
 ## Customize Select all fields in a query shortcut
 
-If the default `Ctrl + space` shortcut is already used by another extension or app, you can customize it in `chrome://extensions/shortcuts` and choose the one you prefer.
+If the default `Ctrl + space` shortcut is already used by another extension or app, you can customize it in **Safari ▸ Settings ▸ Extensions**: select Org Inspector and enter the shortcut you prefer in its "Shortcuts" field.
 
 <img width="1133" alt="Customize Select all fields in a query shortcut" src="https://github.com/user-attachments/assets/f0bca12a-7c92-4fbe-9ca4-a8db51b050e9">
 

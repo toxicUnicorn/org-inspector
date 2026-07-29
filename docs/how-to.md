@@ -1,18 +1,21 @@
 # How to
 
-## Use Sf Inspector with a connected app
+## Use Org Inspector with a connected app
 
 ---
 
-### For Chrome and Edge users
+### Using the bundled connected app
 
-If you enabled "API client whitelisting" (a.k.a "API Access Control") in your org, SF Inspector may not work anymore.
+If you enabled "API client whitelisting" (a.k.a "API Access Control") in your org, Org Inspector may not work anymore.
 
 To secure the extension usage, you can use a OAuth 2.0 flow to get an access token, linked to a connected app installed in your org.
 
+> **Note**
+> Org Inspector ships the connected app of the upstream project, so in your org it is still published under its upstream name "Salesforce Inspector reloaded". Search for that exact name in Setup.
+
 1. Open the extension and scroll down to the "Generate Access Token" button.
 2. You should see the "OAUTH_APP_BLOCKED" error which is normal at this stage.
-3. Go to "Connected Apps OAuth Usage" in setup and search for "Salesforce Inspector reloaded".
+3. Go to "Connected Apps OAuth Usage" in setup and search for "Salesforce Inspector reloaded" (the bundled connected app is still published under its upstream name).
 4. Click "Install" and then confirm installation.
 5. Now configure the profiles or permissions sets which will have the right to use the extension.
 6. Go back to "Connected Apps OAuth Usage" and click "Unblock" next to "Salesforce Inspector reloaded"
@@ -29,7 +32,7 @@ From now when the token will be expired, this banner will show up and provide a 
 > **Warning**
 > Don't forget to grant access to the users by selecting the related profile(s) or permission set(s).
 
-If you are a Firefox user, or if you want to have full control over the connected app settings, you can also use your own external client app by following these instructions:
+If you want full control over the connected app settings, you can also use your own external client app by following these instructions:
 
 ### External Client App Creation
 
@@ -40,7 +43,10 @@ The creation of Connected Apps is soon to be deprecated (planned for Spring 26')
     * External Client App Name
     * Contact Email
     * Check `Enable OAuth` under the API (Enable OAuth Settings) accordion.
-    * Set the Callback URL to `[browser]-extension://[extension-id]/data-export.html`, replacing [browser] with `chrome` or `moz` and [extension-id] with the extension ID found in the URL of any configuration page of the extension (e.g., by clicking `See All Data`).
+    * Set the Callback URL to `safari-web-extension://[extension-id]/data-export.html`, replacing [extension-id] with the UUID shown in the address bar of any Org Inspector page (for example after clicking `Show all data`).
+
+        >**Warning**
+        >Safari assigns this UUID per installation, so it is different on every Mac. If you use Org Inspector on several machines, add one Callback URL per installation.
 3. Configure the OAuth Scopes:
     * Select `Manage user data via APIs (api)`.
     * Select `Manage user data via Web browsers (web)`.
@@ -65,41 +71,6 @@ The creation of Connected Apps is soon to be deprecated (planned for Spring 26')
 8. Refresh page and generate new token
 
     <img width="275" alt="Generate Token" src="https://github.com/tprouvot/Salesforce-Inspector-reloaded/assets/35368290/931df75d-42ac-4667-ab3f-35f6b6b65a66">
-
-## Migrate saved queries from legacy extension to Salesforce Inspector Reloaded
-
-1. Open data export page on legacy extension
-   <img alt="Inspect legacy" src="../assets/images/how-to/inspect-legacy.png?raw=true" height="300">
-2. Get saved queries from `insextSavedQueryHistory` property
-   <img alt="Inspect legacy" src="../assets/images/how-to/query-history.png?raw=true" height="300">
-3. Open it in VS Code, you should have a JSON like this one:
-
-   ```json
-   [
-     { "query": "select Id from Contact limit 10", "useToolingApi": false },
-     { "query": "select Id from Account limit 10", "useToolingApi": false }
-   ]
-   ```
-
-   From there you have two options
-
-   Import the queries by adding a label for each one with the label in query property suffixed by ":"
-   ie.
-
-   ```json
-   [
-     {
-       "query": "Contacts:select Id from Contact limit 10",
-       "useToolingApi": false
-     },
-     {
-       "query": "Accounts:select Id from Account limit 10",
-       "useToolingApi": false
-     }
-   ]
-   ```
-
-Re-import this json in the new extension (with the same key `insextSavedQueryHistory`)
 
 ## Define a CSV separator
 
@@ -133,7 +104,7 @@ If you want to disable the search on the metadata, update related option:
 
 ## Compare Flow Versions
 
-Salesforce Inspector Reloaded provides quick access to Salesforce's Flow Compare feature, allowing you to visually compare different versions of a flow side-by-side in the Flow Builder.
+Org Inspector provides quick access to Salesforce's Flow Compare feature, allowing you to visually compare different versions of a flow side-by-side in the Flow Builder.
 
 ### What is Flow Compare?
 
@@ -149,7 +120,7 @@ For more details, see the [official Salesforce documentation](https://help.sales
 ### How to Access Flow Compare
 
 1. Open Flow Builder
-2. Open Salesforce Inspector Reloaded popup
+2. Open Org Inspector popup
 3. Look for the **Flow Compare** button (appears when viewing a flow version)
 4. Click the button to open Flow Builder with the compare view
 
@@ -290,7 +261,7 @@ Warning: Salesforce is slower for users who have debug mode enabled.
 ## Enable API Call Debug Statistics
 
 Sometimes we may want to know which queries are performed to the Salesforce backend (by type, method, endpoint ...)
-This can help to correlate logs in Salesforce and what is performed by Salesforce Inspector Reloaded extension
+This can help to correlate logs in Salesforce and what is performed by the Org Inspector extension
 
 ## Customize extension's favicon
 
@@ -320,16 +291,15 @@ From the option page, enable "Use favicon color on sandbox banner"
 
 ## Customize extension's shortcuts
 
-Navigate to your browser shortcut menu and choose dedicated shortcuts for the pages you want.
+In Safari, per-extension keyboard shortcuts are configured from the browser settings:
 
-* Chrome: [chrome://extensions/shortcut](chrome://extensions/shortcut)
-* Edge: [edge://extensions/shortcuts](edge://extensions/shortcuts)
-
-<img width="660" alt="Use Chrome Shortcuts" src="https://github.com/tprouvot/Salesforce-Inspector-reloaded/assets/35368290/382aea2d-5278-4dfe-89e6-6dcec4c724c9">
+1. Open **Safari ▸ Settings ▸ Extensions**
+2. Select **Org Inspector** in the list
+3. Use the **Shortcuts** field to assign the key combination you want
 
 ### Default shortcuts
 
-If you want to open popup keyboard shortcuts, you can use the 'ctrl' (windows) or 'command' (mac) key with the corresponding key.
+If you want to open popup keyboard shortcuts, you can use the 'command' key with the corresponding key.
 Example:
 
 * Data <ins>E</ins>xport : e
@@ -395,7 +365,7 @@ When disabled, no API call is made to the RecentlyViewed object, which can reduc
 
 ## API Cache Configuration
 
-Salesforce Inspector Reloaded uses a caching system to reduce the number of API calls made to Salesforce, improving performance and reducing API usage. The extension caches API response data to optimize queries and avoid unnecessary API requests.
+Org Inspector uses a caching system to reduce the number of API calls made to Salesforce, improving performance and reducing API usage. The extension caches API response data to optimize queries and avoid unnecessary API requests.
 
 All cache settings are configured in the **Cache** tab of the Options page:
 
@@ -631,11 +601,11 @@ This feature is particularly useful for:
 
 ## User Tab Toggle Reset Password button
 
-This feature enables a **Reset Password** button on the **User Tab** page in Salesforce Inspector Reloaded. The button can be displayed **on or off** from the extension **Options** page.
+This feature enables a **Reset Password** button on the **User Tab** page in Org Inspector. The button can be displayed **on or off** from the extension **Options** page.
 
 ### How it works
 
-1. Open **Salesforce Inspector Reloaded**.
+1. Open **Org Inspector**.
 2. Navigate to the **Options** page.
 3. Locate the **Enable Reset Password button on User Tab** option.
 4. Toggle the option:

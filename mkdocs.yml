@@ -35,9 +35,7 @@ theme:
 extra:
   social:
     - icon: fontawesome/brands/github-alt
-      link: https://github.com/tprouvot
-    - icon: fontawesome/brands/linkedin
-      link: https://www.linkedin.com/in/thomasprouvot/
+      link: https://github.com/toxicUnicorn/org-inspector
 
 extra_javascript:
   - https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js
@@ -73,7 +71,7 @@ nav:
   - Home: index.md
   - Getting Started:
       - Welcome: welcome.md
-      - Configure Connected App: how-to/#use-sf-inspector-with-a-connected-app
+      - Configure Connected App: how-to/#use-org-inspector-with-a-connected-app
       - Release Notes: release-note.md
   - Features:
       - Data Management:
@@ -93,13 +91,10 @@ nav:
           - Org Limits: limits.md
           - SObject Cache Management: sobject-cache-management.md
       - How-To: how-to.md
-  - Articles: articles.md
 
   - Support:
       - Troubleshooting: troubleshooting.md
       - Privacy Policy: privacy.md
-      - Donate: donate.md
-      - Developer Notes: dev-notes.md
 
 copyright: |
   Based on <a href="https://github.com/tprouvot/Salesforce-Inspector-reloaded" target="_blank" rel="noopener">Salesforce Inspector Reloaded</a> &copy; 2023 Thomas Prouvot (MIT). Fork &copy; 2026 Eduard Chekan. Not affiliated with Salesforce, Inc.

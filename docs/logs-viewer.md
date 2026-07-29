@@ -2,7 +2,7 @@
 
 > **Prerequisite**
 > Agentforce needs to be enabled.
-> The prompt PromptTemplateDebugLog needs to be deployed in the org. ([AnalyzeDebugLog prompt template](https://github.com/tprouvot/Salesforce-Inspector-reloaded/blob/releaseCandidate/force-app/main/default/genAiPromptTemplates/AnalyzeDebugLog.genAiPromptTemplate-meta.xml))
+> The prompt PromptTemplateDebugLog needs to be deployed in the org. You can get the metadata source here: [AnalyzeDebugLog prompt template](https://github.com/tprouvot/Salesforce-Inspector-reloaded/blob/releaseCandidate/force-app/main/default/genAiPromptTemplates/AnalyzeDebugLog.genAiPromptTemplate-meta.xml)
 
 You can use Agentforce to generate detailed log analysis. This feature leverages Salesforce's Prompt Templates to help you understand the log details.
 
@@ -194,7 +194,7 @@ Each log row provides instant actions:
 
 ## Usage Instructions
 
-1. **Open the Logs Viewer**: Click on the **"Logs"** button in the Org tab of the Salesforce Inspector Reloaded popup, or navigate directly to the Debug Logs page from any Salesforce org
+1. **Open the Logs Viewer**: Click on the **"Logs"** button in the Org tab of the Org Inspector popup, or navigate directly to the Debug Logs page from any Salesforce org
 
 2. **Configure Fetch Bodies** (optional): Toggle the "Fetch Bodies" switch in the header to enable/disable fetching log bodies for detailed action information
 
