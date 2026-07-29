@@ -33,8 +33,8 @@ Then in Safari: Settings ▸ Extensions ▸ enable **Org Inspector** ▸ grant "
 
 ## Key facts
 
-- **GitHub handle:** `ChekeEdd`. Repo assumed to be `org-inspector`. Push with:
-  `git remote add origin https://github.com/ChekeEdd/org-inspector.git && git push -u origin safari`
+- **GitHub handle:** `toxicUnicorn`. Repo assumed to be `org-inspector`. Push with:
+  `git remote add origin https://github.com/toxicUnicorn/org-inspector.git && git push -u origin safari`
 - **Bundle id:** `com.echekan.OrgInspector` (reverse-DNS; does NOT need to match the GitHub handle).
 - **Team ID from the original Mac was `2GL7FWJDW5`** — it will be different on the new Mac; regenerate.
 - The Xcode project is disposable and regenerated under `target/` (gitignored) each build. All
@@ -57,8 +57,8 @@ Code (branch `safari`, commits `d442047`…`d218464`):
 
 ## What is left (in order)
 
-1. **Push the fork to GitHub** (`ChekeEdd/org-inspector`) and enable GitHub Pages so the privacy
-   policy is live at `https://chekeedd.github.io/org-inspector/privacy/`. Steps are in
+1. **Push the fork to GitHub** (`toxicUnicorn/org-inspector`) and enable GitHub Pages so the privacy
+   policy is live at `https://toxicunicorn.github.io/org-inspector/privacy/`. Steps are in
    `platforms/safari/APP_STORE.md` → "Hosting the privacy policy".
 2. **Smoke-test the session/record flow** after the security changes to `background.js` (open the
    popup on a record, confirm Show All Data / Data Export still return data). The validation logic

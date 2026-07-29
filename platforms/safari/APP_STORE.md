@@ -3,7 +3,7 @@
 Everything needed to fill in App Store Connect, plus the build/release commands. Fill the
 bracketed placeholders once the Developer Program is active.
 
-URLs below assume the fork is pushed to `github.com/ChekeEdd/org-inspector`. If you name the repo
+URLs below assume the fork is pushed to `github.com/toxicUnicorn/org-inspector`. If you name the repo
 differently, update `mkdocs.yml` `site_url`, the links in `platforms/safari/app/Main.html`, and the
 URLs in this file to match.
 
@@ -14,11 +14,11 @@ App Store Connect requires a public Privacy Policy URL. This repo already builds
 push to `safari`. One-time setup:
 
 1. Create the repo `org-inspector` under your account and push the `safari` branch:
-   `git remote add origin https://github.com/ChekeEdd/org-inspector.git && git push -u origin safari`
+   `git remote add origin https://github.com/toxicUnicorn/org-inspector.git && git push -u origin safari`
 2. The `ci` workflow runs `mkdocs gh-deploy`, publishing to the `gh-pages` branch.
 3. In the repo: Settings ▸ Pages ▸ Source = "Deploy from a branch", branch `gh-pages` / root
    (GitHub often enables this automatically after the first deploy).
-4. The policy is then live at **https://chekeedd.github.io/org-inspector/privacy/**.
+4. The policy is then live at **https://toxicunicorn.github.io/org-inspector/privacy/**.
 
 ## Prerequisites (do once)
 
@@ -66,8 +66,8 @@ with `SAFARI_BUILD_NUMBER` if you want sequential build numbers.
 | Secondary category | (optional) Productivity |
 | Age rating | 4+ |
 | Price | Free (or as you choose) |
-| Privacy Policy URL | https://chekeedd.github.io/org-inspector/privacy/ |
-| Support URL | https://github.com/ChekeEdd/org-inspector |
+| Privacy Policy URL | https://toxicunicorn.github.io/org-inspector/privacy/ |
+| Support URL | https://github.com/toxicUnicorn/org-inspector |
 | Marketing URL | (optional) |
 | Copyright | © 2023 Thomas Prouvot; fork modifications © 2026 |
 

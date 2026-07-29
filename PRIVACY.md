@@ -59,7 +59,7 @@ Org Inspector is open source. You can read the code, or watch the network traffi
 Inspector and confirm that the only hosts contacted are Salesforce-operated domains — your own
 Salesforce org and Salesforce's public status service.
 
-Source: https://github.com/ChekeEdd/org-inspector
+Source: https://github.com/toxicUnicorn/org-inspector
 
 ## Children
 
@@ -77,7 +77,7 @@ Any change to this policy will be published at this URL with an updated effectiv
 
 ## Contact
 
-Questions: open an issue at https://github.com/ChekeEdd/org-inspector/issues
+Questions: open an issue at https://github.com/toxicUnicorn/org-inspector/issues
 
 ---
 

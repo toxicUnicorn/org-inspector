@@ -74,7 +74,7 @@ access token. Follow the steps in the upstream
 ## Support
 
 Found a bug or have a feature request? Open an issue at
-[github.com/ChekeEdd/org-inspector/issues](https://github.com/ChekeEdd/org-inspector/issues).
+[github.com/toxicUnicorn/org-inspector/issues](https://github.com/toxicUnicorn/org-inspector/issues).
 
 ## Building from source
 
