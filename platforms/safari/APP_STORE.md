@@ -9,16 +9,11 @@ URLs in this file to match.
 
 ## Hosting the privacy policy (GitHub Pages)
 
-App Store Connect requires a public Privacy Policy URL. This repo already builds one with MkDocs
-(`docs/privacy.md` includes the root `PRIVACY.md`), and `.github/workflows/ci.yml` deploys it on a
-push to `safari`. One-time setup:
+**Done — the policy is already live at https://toxicunicorn.github.io/org-inspector/privacy/.**
 
-1. Create the repo `org-inspector` under your account and push the `safari` branch:
-   `git remote add origin https://github.com/toxicUnicorn/org-inspector.git && git push -u origin safari`
-2. The `ci` workflow runs `mkdocs gh-deploy`, publishing to the `gh-pages` branch.
-3. In the repo: Settings ▸ Pages ▸ Source = "Deploy from a branch", branch `gh-pages` / root
-   (GitHub often enables this automatically after the first deploy).
-4. The policy is then live at **https://toxicunicorn.github.io/org-inspector/privacy/**.
+`.github/workflows/deploy-docs.yml` builds the MkDocs site (`docs/privacy.md` includes the root
+`PRIVACY.md`) and publishes it straight to Pages on every push to `safari` that touches the docs.
+Pages is configured with `build_type=workflow`, so there is no `gh-pages` branch to point at.
 
 ## Prerequisites (do once)
 
