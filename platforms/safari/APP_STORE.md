@@ -62,7 +62,7 @@ with `SAFARI_BUILD_NUMBER` if you want sequential build numbers.
 | Age rating | 4+ |
 | Price | Free (or as you choose) |
 | Privacy Policy URL | https://toxicunicorn.github.io/org-inspector/privacy/ |
-| Support URL | https://github.com/toxicUnicorn/org-inspector |
+| Support URL | https://toxicunicorn.github.io/org-inspector/support/ |
 | Marketing URL | (optional) |
 | Copyright | © 2023 Thomas Prouvot; fork modifications © 2026 |
 
@@ -97,6 +97,19 @@ with `SAFARI_BUILD_NUMBER` if you want sequential build numbers.
   questionnaire appears. The app uses only the OS TLS stack and server-side PKCE; it bundles no
   cryptography.
 
+## Rejection history — read before resubmitting
+
+**2026-08-05, build 2.1.0 (1785330719), submission `108484d6-da31-4565-a635-800bb265fbf2`:**
+
+- **Guideline 1.5 — Support URL.** A GitHub repository URL is *not* accepted as a support page.
+  Apple wants "a functional webpage with support information" — a contact address and answers to
+  common questions. Fixed by adding `docs/support.md`, served at
+  https://toxicunicorn.github.io/org-inspector/support/, and pointing the Support URL there.
+- **Guideline 2.1(a) — verification code.** The reviewer still hit Salesforce's identity challenge,
+  so the Apple `17.0.0.0/8` trusted range did not cover the machine they logged in from
+  (review device: MacBook Air 15" M3). See the next section for how to find the IP they actually
+  used — do not guess a second time.
+
 ## App Review Information → Sign-In Information (REQUIRED)
 
 The extension does nothing until you are on a Salesforce page with a live session, so the reviewer
@@ -114,12 +127,24 @@ code goes to you** — they cannot complete sign-in, and the submission is rejec
 of the following in the demo org before submitting.
 
 1. **Trusted IP Ranges** — this is the only setting that actually suppresses the emailed code, and
-   it is matched on the *login IP*, so it has to cover Apple:
-   Setup ▸ quick find `Network Access` ▸ Trusted IP Ranges ▸ New →
-   Start `17.0.0.0`, End `17.255.255.255`.
-   Apple owns the whole `17.0.0.0/8` block and App Review signs in from Apple's network. Do **not**
-   try `0.0.0.0`–`255.255.255.255`: Salesforce caps a single range at 33,554,432 addresses (a /7)
-   and rejects it with "The range specified is too large". Apple's /8 is 16.7M, so it fits.
+   it is matched on the *login IP*, so it has to cover the machine App Review signs in from:
+   Setup ▸ quick find `Network Access` ▸ Trusted IP Ranges ▸ New.
+
+   **Do not guess the range.** Apple owns `17.0.0.0/8`, but the 2026-08-05 review proves reviewers
+   do not always sign in from it. After any review attempt, read the IP they actually used:
+
+   > Setup ▸ quick find `Login History` ▸ filter by the reviewer's username and the review date
+   > from Apple's message. The **Source IP** column shows the real address; **Status** will read
+   > something like *"Failed: Computer activation required"*. Export to CSV if the list is long.
+
+   Then trust a range around that address (a /16 — e.g. `a.b.0.0`–`a.b.255.255` — absorbs the churn
+   inside one datacentre without burning the quota).
+
+   Two hard constraints: a *single* range is capped at 33,554,432 addresses (a /7), and rejected
+   with "The range specified is too large" above that; and the org has a *cumulative* quota, so a
+   single `17.0.0.0/8` entry (16.7M) consumes essentially all of it and every later range fails
+   with "You reached the IP address limit". If you need room, **delete the /8 first** and add
+   several targeted /16s instead — coverage of the observed IPs beats coverage of a guess.
 2. **Profile login IP ranges**: Setup ▸ Users ▸ Profiles ▸ (reviewer's profile) ▸ Login IP Ranges ▸
    New → `0.0.0.0`–`255.255.255.255`. Profile ranges accept the full space. Note this only controls
    *who may log in from where* — it does not remove the verification challenge, so it is not a
@@ -142,6 +167,25 @@ Because that last bit cannot be verified from outside, add a fallback line to th
 offering to supply a code on request (see the notes below). It costs nothing and turns a silent
 rejection into a question.
 
+### When the reviewer is challenged anyway
+
+Salesforce lets an admin mint a code that works without access to the org's mailbox:
+Setup ▸ Users ▸ (reviewer's user) ▸ **Generate** next to *Temporary Verification Code* → pick an
+expiry of **24 hours** (the maximum) → Generate. It can be used repeatedly until it expires, and it
+satisfies the device-activation challenge, not just MFA.
+
+24 hours is shorter than a typical review window, so it is a *response* tool, not a preventative
+one. Use it like this:
+
+- **Reply in Resolution Center** (App Store Connect ▸ the rejected submission ▸ Messages) — no
+  resubmit is needed for a 2.1(a) information request. Generate a fresh code, paste it with its
+  expiry time, and offer to issue another on request.
+- **Apple's phone-call option:** their message links an online form to have a representative call
+  you and take the code live. Confirm the phone number in App Review Information first. Also stated
+  in their message: resubmitting is not required for the call.
+- Whichever route, fix the trusted range from Login History at the same time so the next update
+  does not repeat this.
+
 Only ever do this in a throwaway demo org that holds no real data — it deliberately disables the
 org's login protections. Also sign in to the org every couple of months so Salesforce does not
 deactivate it for inactivity, and keep the credentials working for future updates.
@@ -157,9 +201,11 @@ deactivate it for inactivity, and keep the credentials working for future update
   > Org Inspector reuses the logged-in Salesforce session cookie to call Salesforce's official APIs
   > on the user's behalf. No data is sent anywhere except the user's own Salesforce org.
   >
-  > This demo org is configured to accept sign-in without an identity challenge. If Salesforce does
-  > ask for a verification code, please contact us at [your-support-email] and we will provide it
-  > straight away — the code is mailed to the org owner and we monitor that inbox during review.
+  > VERIFICATION CODE: this demo org is configured to accept sign-in without an identity challenge.
+  > If Salesforce asks for a verification code anyway, message us in Resolution Center or email
+  > [your-support-email] and we will reply with a working code within a few hours — we monitor that
+  > inbox specifically during review. We cannot pre-print a permanent code here because Salesforce
+  > caps admin-issued codes at 24 hours, but we can issue one on demand at any time.
 
 ## Screenshots
 
